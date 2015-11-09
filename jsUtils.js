@@ -22,6 +22,10 @@
             return new jsUtils.fn.init(context);
         };
 
+    var class2type = {};
+    var toString = class2type.toString;
+    var hasOwn = class2type.hasOwnProperty;
+
     jsUtils.fn = jsUtils.prototype = {
         version: version,
         constructor: jsUtils,
@@ -40,7 +44,7 @@
             target = arguments[i] || {};
             i++;
         }
-        if (typeof target !== "object" && !jQuery.isFunction(target)) {
+        if (typeof target !== "object" && !jsUtils.isFunction(target)) {
             target = {};
         }
         if (i === length) {
@@ -55,14 +59,14 @@
                     if (target === copy) {
                         continue;
                     }
-                    if (deep && copy && (jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)))) {
+                    if (deep && copy && (jsUtils.isPlainObject(copy) || (copyIsArray = jsUtils.isArray(copy)))) {
                         if (copyIsArray) {
                             copyIsArray = false;
-                            clone = src && jQuery.isArray(src) ? src : [];
+                            clone = src && jsUtils.isArray(src) ? src : [];
                         } else {
-                            clone = src && jQuery.isPlainObject(src) ? src : {};
+                            clone = src && jsUtils.isPlainObject(src) ? src : {};
                         }
-                        target[name] = jQuery.extend(deep, clone, copy);
+                        target[name] = jsUtils.extend(deep, clone, copy);
                     } else if (copy !== undefined) {
                         target[name] = copy;
                     }
@@ -73,9 +77,101 @@
     };
 
     var init = jsUtils.fn.init = function(context) {
-        this._context = context;//this means jsUtils.fn.init
+        this._context = context; //this means jsUtils.fn.init
     };
     init.prototype = jsUtils.fn;
+
+    //based utils
+    jsUtils.extend({
+        type: function(obj) {
+            if (obj == null) {
+                return obj + "";
+            }
+            // Support: Android<4.0, iOS<6 (functionish RegExp)
+            return typeof obj === "object" || typeof obj === "function" ?
+                class2type[toString.call(obj)] || "object" :
+                typeof obj;
+        },
+        isPlainObject: function(obj) {
+            if (jsUtils.type(obj) !== "object" || obj.nodeType || jsUtils.isWindow(obj)) {
+                return false;
+            }
+            if (obj.constructor &&
+                !hasOwn.call(obj.constructor.prototype, "isPrototypeOf")) {
+                return false;
+            }
+            return true;
+        },
+        isArray: Array.isArray,
+        isArraylike: function(obj) {
+            var length = "length" in obj && obj.length,
+                type = jsUtils.type(obj);
+            if (type === "function" || jsUtils.isWindow(obj)) {
+                return false;
+            }
+            if (obj.nodeType === 1 && length) {
+                return true;
+            }
+            return type === "array" || length === 0 ||
+                typeof length === "number" && length > 0 && (length - 1) in obj;
+        },
+        isWindow: function(obj) {
+            return obj != null && obj === obj.window;
+        },
+        isFunction: function(obj) {
+            return jsUtils.type(obj) === "function";
+        }
+    });
+
+    //common utils
+    jsUtils.extend({
+        each: function(obj, callback, args) {
+            var value,
+                i = 0,
+                length = obj.length,
+                isArray = jsUtils.isArraylike(obj);
+            if (args) {
+                if (isArray) {
+                    for (; i < length; i++) {
+                        value = callback.apply(obj[i], args);
+                        if (value === false) {
+                            break;
+                        }
+                    }
+                } else {
+                    for (i in obj) {
+                        value = callback.apply(obj[i], args);
+                        if (value === false) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                if (isArray) {
+                    for (; i < length; i++) {
+                        value = callback.call(obj[i], i, obj[i]);
+
+                        if (value === false) {
+                            break;
+                        }
+                    }
+                } else {
+                    for (i in obj) {
+                        value = callback.call(obj[i], i, obj[i]);
+
+                        if (value === false) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return obj;
+        }
+    });
+
+    jsUtils.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
+        class2type["[object " + name + "]"] = name.toLowerCase();
+    });
 
     //browser check
     jsUtils.extend({
@@ -91,8 +187,8 @@
 
 
     jsUtils.fn.extend({
-        context: function() {
-            return this._context//this means jsUtils.fn
+        getContext: function() {
+            return this._context //this means jsUtils.fn
         }
     });
 
