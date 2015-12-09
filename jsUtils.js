@@ -25,6 +25,7 @@
     var class2type = {};
     var toString = class2type.toString;
     var hasOwn = class2type.hasOwnProperty;
+    var arraySlice = Array.prototype.slice;
 
     jsUtils.fn = jsUtils.prototype = {
         version: version,
@@ -85,7 +86,7 @@
     jsUtils.extend({
         type: function(obj) {
             if (obj == null) {
-                return obj + "";//null situation
+                return obj + ""; //null situation
             }
             // Support: Android<4.0, iOS<6 (functionish RegExp)
             return typeof obj === "object" || typeof obj === "function" ?
@@ -115,13 +116,18 @@
             return type === "array" || length === 0 ||
                 typeof length === "number" && length > 0 && (length - 1) in obj;
         },
+        toArray: function(obj) {
+            if (obj !== undefined && obj !== null) {
+                return arraySlice.call(obj);
+            }
+        },
         isWindow: function(obj) {
             return obj != null && obj === obj.window;
         },
         isFunction: function(obj) {
             return jsUtils.type(obj) === "function";
         },
-        isPrimitive: function(obj) {//undefined, null, number, boolean, string, symbol
+        isPrimitive: function(obj) { //undefined, null, number, boolean, string, symbol
             if (null === obj) {
                 return true;
             }
@@ -130,7 +136,16 @@
             }
             return false;
         },
-        isObject: function(obj) {
+        isObject: function(obj) { //false: undefined, null, 0, false, NaN, ""
+            if (null === obj) {
+                return false;
+            }
+            if (['object', 'function'].indexOf(typeof obj) !== -1) {
+                return true;
+            }
+            return false;
+        },
+        isPureObject: function(obj) {
             if (null === obj) {
                 return false;
             }
