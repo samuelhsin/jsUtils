@@ -121,7 +121,7 @@
         isFunction: function(obj) {
             return jsUtils.type(obj) === "function";
         },
-        isPrimitive: function(obj) {
+        isPrimitive: function(obj) {//undefined, null, number, boolean, string, symbol
             if (null === obj) {
                 return true;
             }
