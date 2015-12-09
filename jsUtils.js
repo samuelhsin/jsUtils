@@ -85,7 +85,7 @@
     jsUtils.extend({
         type: function(obj) {
             if (obj == null) {
-                return obj + "";
+                return obj + "";//null situation
             }
             // Support: Android<4.0, iOS<6 (functionish RegExp)
             return typeof obj === "object" || typeof obj === "function" ?
@@ -126,6 +126,15 @@
                 return true;
             }
             if (['undefined', 'string', 'number', 'boolean', 'symbol'].indexOf(typeof obj) !== -1) {
+                return true;
+            }
+            return false;
+        },
+        isObject: function(obj) {
+            if (null === obj) {
+                return false;
+            }
+            if (['object'].indexOf(typeof obj) !== -1) {
                 return true;
             }
             return false;
