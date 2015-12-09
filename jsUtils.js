@@ -120,6 +120,15 @@
         },
         isFunction: function(obj) {
             return jsUtils.type(obj) === "function";
+        },
+        isPrimitive: function(obj) {
+            if (null === obj) {
+                return true;
+            }
+            if (['undefined', 'string', 'number', 'boolean', 'symbol'].indexOf(typeof obj) !== -1) {
+                return true;
+            }
+            return false;
         }
     });
 
